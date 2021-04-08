@@ -7,10 +7,11 @@ const bodyParser = require('body-Parser')
 require('dotenv').config()
 
 const port = process.env.PORT || 5000
-console.log(process.env.DB_USER, process.env.DB_PASS)
+
 
 app.use(cors())
-app.use(bodyParser.json())
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -23,34 +24,33 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     //console.log('connection err', err)
   const adminCollection = client.db("product").collection("admin");
-    console.log('admin collection successfully')
-
+   
     const clientCollection = client.db("product").collection("client");
 
     app.get('/product', (req, res) => {
       adminCollection.find()
       .toArray((err,items) => {
         res.send(items)
-        console.log('from database', items)
+        
       })
     })
 
     app.post ('/addProduct', (req, res) => {
         const newProduct = req.body;
-        console.log('adding new product', newProduct)
+       
         adminCollection.insertOne(newProduct)
         .then(result => {
-        console.log('inserted count',result.insertedCount)
+       
         res.send(result.insertedCount > 0)
         })
     })
 
     app.delete('/deleteProduct/:id', (req, res) => {
       const id = ObjectID(req.params.id);
-      console.log('delete this', id);
+      
       adminCollection.findOneAndDelete({_id: id})
       .then(result => {
-        console.log(result)
+        
         res.send(result.deletedCount > 0)
       })
   })
